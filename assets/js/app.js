@@ -3,7 +3,7 @@ var svgHeight = 500;
 
 var margin = {
 	top: 20,
-	bottom: 40,
+	bottom: 80,
 	right: 40,
 	left: 100
 };
@@ -18,14 +18,14 @@ var svg = d3
 	.attr("height", svgHeight);
 
 var chartGroup = svg.append("g")
-	.attr("transform", `translate(${margin.left}, ${margin.top}`);
+	.attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 var chosenXAxis = "poverty";
 
-function xScale(data, chosenXAxis) {
+function xScale(myData, chosenXAxis) {
 	var xLinearScale = d3.scaleLinear()
-		.domain([d3.min(data, d => d[chosenXAxis]) * 0.8,
-			d3.max(data, d => d[chosenXAxis]) * 1.2
+		.domain([d3.min(myData, d => d[chosenXAxis]) * 0.8,
+			d3.max(myData, d => d[chosenXAxis]) * 1.2
 		])
 		.range([0, width]);
 	return xLinearScale;
@@ -54,10 +54,10 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis) {
 
 function updateToolTip(chosenXAxis, circlesGroup) {
 	if (chosenXAxis === "poverty") {
-		var label = "In Poverty (%)";
+		var label = "Poverty:";
 	}
 	else {
-		var label = "Age (Median)";
+		var label = "Age (Median):";
 	}
 
 	var toolTip = d3.tip()
@@ -81,20 +81,22 @@ function updateToolTip(chosenXAxis, circlesGroup) {
 }
 
 
-d3.csv("data/data.csv", function(err, data) {
+d3.csv("assets/data/data.csv", function(err, myData) {
 	if (err) throw err;
 
 
-	data.forEach(function(data) {
+	myData.forEach(function(data) {
 		data.poverty = +data.poverty;
 		data.age = +data.age;
 		data.healthcare = +data.healthcare;
 	});
 
-	var xLinearScale = xScale(data, chosenXAxis);
+	console.log(myData);
+
+	var xLinearScale = xScale(myData, chosenXAxis);
 
 	var yLinearScale = d3.scaleLinear()
-		.domain([0, d3.max(data, d => d.healthcare)])
+		.domain([0, d3.max(myData, d => d.healthcare)])
 		.range([height, 0]);
 
 	var bottomAxis = d3.axisBottom(xLinearScale);
@@ -109,7 +111,7 @@ d3.csv("data/data.csv", function(err, data) {
 		.call(leftAxis);
 
 	var circlesGroup = chartGroup.selectAll("circle")
-		.data(data)
+		.data(myData)
 		.enter()
 		.append("circle")
 		.attr("cx", d => xLinearScale(d[chosenXAxis]))
@@ -127,7 +129,7 @@ d3.csv("data/data.csv", function(err, data) {
 		.attr("y", 20)
 		.attr("value", "poverty")
 		.classed("active", true)
-		.text("In Poverty (%):");
+		.text("In Poverty (%)");
 
 	var ageLabel = labelsGroup.append("text")
 		.attr("x", 0)
@@ -153,7 +155,7 @@ d3.csv("data/data.csv", function(err, data) {
 
 				chosenXAxis = value;
 
-				xLinearScale = xScale(data, chosenXAxis);
+				xLinearScale = xScale(myData, chosenXAxis);
 
 				xAxis = renderAxes(xLinearScale, xAxis);
 
